@@ -1,0 +1,158 @@
+---
+title: "Analyse quantitative des Actions"
+author: "Josue Afouda"
+date: "27/07/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rvest)
+library(quantmod)
+options("getSymbols.warning4.0"=FALSE)
+library(lubridate)
+```
+
+
+# Objectif 
+
+Analyser chaque action de l'indice boursier S&P500. Le but ultime est de trouver les actions qui présentent les meilleures perspectives d'avenir sur une base quantitative. De plus, En prime, nous étudierons les corrélations entre actions pour ajouter de la diversification au portefeuille. 
+
+# Obtention de la liste de toutes les Actions du S&P500 par Web Scraping
+
+
+```{r}
+# Lecture de la page web 
+
+sp500_html <- read_html("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies") 
+
+# Importation des tables provenant de cette page web 
+
+tables <- html_table(sp500_html, fill = TRUE)
+
+print(class(tables))
+```
+
+C'est le premier tableau (qui est d'ailleurs le seul) de la page web qui nous intéresse. Autrement dit, nous devons récupérer le premier élément de la liste *tables* :
+
+```{r}
+sp_500_raw <- tables[[1]]
+
+head(sp_500_raw)
+```
+
+```{r}
+class(sp_500_raw)
+```
+
+```{r}
+sp_500 <- sp_500_raw %>%
+  select(Symbol, Security, `GICS Sector`, `GICS Sub-Industry`) %>%
+  as_tibble()
+
+print(class(sp_500))
+
+head(sp_500)
+```
+
+On peut faire le même travail pour les entreprises du CAC 40. Lien pour le CAC 40 : https://en.wikipedia.org/wiki/CAC_40
+
+
+```{r}
+# Nombre de modalités de chaque variable
+
+sp_500 %>% 
+    lapply(function(x) x %>% unique() %>% length()) %>%
+    unlist() 
+```
+
+Nous avons 505 symboles et 505 entreprises donc tout va bien :)
+
+
+```{r}
+# Nombre de sociétés par Secteur principal (GICS Sector)
+
+sp_500 %>%
+    # Grouper par "GICS Sector" et compter le nombre d'observations
+    group_by(`GICS Sector`) %>%
+    summarise(count = n()) %>%
+    # Visualisation
+    ggplot(aes(x = `GICS Sector` %>% fct_reorder(count),
+               y = count
+               )) + 
+    geom_bar(stat = "identity") +
+    geom_text(aes(label = count), size = 3, nudge_y = 4, nudge_x = .1) + 
+    scale_y_continuous(limits = c(0,100)) +
+    ggtitle(label = "Nombre de sociétés du S&P500 par Secteur principal") +
+    xlab(label = "GICS Sector") +
+    coord_flip() 
+```
+
+Une technique d'atténuation des risques consiste à sélectionner des actions ayant une faible corrélation de rendement entre elles. En règle générale, la sélection parmi différents secteurs permet de réduire cette corrélation et de diversifier le portefeuille. 
+
+
+```{r}
+# Création d'une fonction pour récupérer les données d'une entreprise
+
+get_stock_prices <- function(ticker, return_format = "tibble", ...) {
+    # Get stock prices
+    stock_prices_xts <- getSymbols(Symbols = ticker, auto.assign = FALSE, ...)
+    # Rename
+    names(stock_prices_xts) <- c("Date", "Open", "High", "Low", "Close", "Volume", "Adjusted")
+    # Return in xts format if tibble is not specified
+    if (return_format == "tibble") {
+        stock_prices <- stock_prices_xts %>%
+            as_tibble() %>%
+            rownames_to_column(var = "Date") %>%
+            mutate(Date = ymd(Date))
+    } else {
+        stock_prices <- stock_prices_xts
+    }
+    stock_prices
+}
+```
+
+
+```{r}
+get_stock_prices <- function(ticker) {
+  stock_prices <- getSymbols(ticker, auto.assign = F)
+  names(stock_prices) <- c("Open", "High", "Low", "Close", "Volume", "Adjusted")
+  stock_prices
+}
+```
+
+
+
+```{r}
+# Application de la fonction
+
+head(get_stock_prices("MA"))
+```
+
+```{r}
+# Fonction pour calculer les logarithmes des rendements journaliers
+
+get_log_returns <- function(x) {
+  log_returns <- dailyReturn(x = x$Adjusted, type = "log")
+  log_returns
+}
+```
+
+
+```{r}
+# Application de la fonction get_log_returns
+
+head(get_log_returns(get_stock_prices("MA")))
+```
+
+
+
+
+
+
+
+
+
+
+

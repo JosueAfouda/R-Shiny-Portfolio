@@ -1,0 +1,61 @@
+if (input$chart %in% c('line', 'bar', 'candlesticks', 'matchsticks')) {
+           chartSeries(
+               DF(),
+               type = input$chart,
+               subset = as.character(input$yearsubset),
+               theme = chartTheme("black"),
+               name = str_split(input$stock, pattern = ",")[[1]][1]
+           )
+       } else if (input$chart == 'Bollinger Bands') {
+           chartSeries(
+               DF(),
+               subset = as.character(input$yearsubset),
+               TA = "addBBands(n = 20, sd = 2)",
+               theme = chartTheme("white"),
+               name = str_split(input$stock, pattern = ",")[[1]][1]
+           )
+       } else if (input$chart == 'RSI') {
+           chartSeries(
+               DF(),
+               subset = as.character(input$yearsubset),
+               TA = "addRSI()",
+               theme = chartTheme("black"),
+               name = str_split(input$stock, pattern = ",")[[1]][1]
+           )
+       } else if (input$chart == 'Moving Average Convergence Divergence') {
+           chartSeries(
+               DF(),
+               subset = as.character(input$yearsubset),
+               TA = "addMACD()",
+               theme = chartTheme("white"),
+               name = paste(str_split(input$stock, pattern = ",")[[1]][1],
+                            ",",
+                            " Moving Average Convergence Divergence")
+           )
+       } else {
+           chartSeries(
+               DF(),
+               subset = as.character(input$yearsubset),
+               TA = "addEMA(n = 20)",
+               theme = chartTheme("black"),
+               name = paste(str_split(input$stock, pattern = ",")[[1]][1],
+                            ",",
+                            " Exponentiel Moving Average with window = 20")
+           )
+       }
+
+
+
+
+
+radioButtons('chart', 'Select Chart type', 
+                        choices = c('Line Graph' = 'line', 
+                                    'Bar Chart' = 'bar', 
+                                    'Candlesticks' = 'candlesticks', 
+                                    'Matchsticks' = 'matchsticks', 
+                                    'Bollinger Bands', 
+                                    'RSI', 
+                                    'Moving Average Convergence Divergence', 
+                                    'Add Exponentiel Moving Average'),
+                        inline = T
+                        )
