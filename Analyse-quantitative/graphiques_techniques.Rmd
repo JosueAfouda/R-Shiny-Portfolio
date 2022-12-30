@@ -9,15 +9,15 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
+# library(tidyverse)
 library(quantmod)
-library(PerformanceAnalytics)
-library(RColorBrewer)
-library(tseries)
-library(lubridate)
-library(Quandl)
-Quandl.api_key("7jthmmLEd2yYWJU_tjf1")
-options("getSymbols.warning4.0"=FALSE)
+# library(PerformanceAnalytics)
+# library(RColorBrewer)
+# library(tseries)
+# library(lubridate)
+# library(Quandl)
+# Quandl.api_key("7jthmmLEd2yYWJU_tjf1")
+# options("getSymbols.warning4.0"=FALSE)
 ```
 
 
@@ -28,6 +28,7 @@ options("getSymbols.warning4.0"=FALSE)
 
 msft <- getSymbols("MSFT", auto.assign = F)
 head(msft)
+tail(msft)
 ```
 
 

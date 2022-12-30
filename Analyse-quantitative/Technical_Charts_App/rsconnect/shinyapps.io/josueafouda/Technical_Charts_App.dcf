@@ -1,0 +1,14 @@
+name: Technical_Charts_App
+title: Technical_Charts_App
+username:
+account: josueafouda
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7954597
+bundleId: 6681111
+url: https://josueafouda.shinyapps.io/Technical_Charts_App/
+when: 1672318301.86797
+lastSyncTime: 1672318301.86799
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: scraping_tickers.R

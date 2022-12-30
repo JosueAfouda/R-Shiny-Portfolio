@@ -1,0 +1,115 @@
+---
+runtime: shiny
+title: "Dashboard montrant l'exposition moyenne annuelle aux PM2.5 (µg/m3) en 2017. Par Josué AFOUDA"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(shiny)
+library(flexdashboard)
+library(rnaturalearth)
+library(wbstats)
+library(leaflet)
+library(DT)
+library(ggplot2)
+library(plotly)
+library(sp)
+library(terra)
+```
+
+Column {data-width=600}
+-----------------------------------------------------------------------
+
+```{r}
+p(strong("Plus de la moitié de la population mondiale vit", 
+         " sans la protection de normes appropriées de qualité de l'air."), 
+  " Les PM2.5 sont des particules fines qui polluent l'atmosphère et sont", 
+  " précoccupants pour la santé publique lorsque leurs concentrations", 
+  " sont élévées dans l'air.")
+h4(tags$a("Suivez-moi sur Linkedin", 
+              href = 'https://www.linkedin.com/in/josu%C3%A9-afouda/'))
+```
+
+
+### Carte interactive du monde montrant les valeurs de PM2.5
+
+```{r}
+map <- ne_countries()
+names(map)[names(map) == "iso_a3"] <- "ISO3"
+names(map)[names(map) == "name"] <- "NAME"
+
+indicators <- wbsearch(pattern = "pollution")
+
+# wb_data() function : Download Data from the World Bank API
+d <- wb_data(
+  indicator = "EN.ATM.PM25.MC.M3", 
+  start_date = 2017, 
+  end_date = 2017
+)
+
+map$PM2.5 <- d[match(map$ISO3, d$iso3c), "EN.ATM.PM25.MC.M3"]
+
+df <- map@data
+ISO3 <- df$ISO3
+NAME <- df$NAME
+PM2.5 <- df$PM2.5$EN.ATM.PM25.MC.M3
+
+#  Leaflet map with the PM2.5 values
+pal <- colorBin(
+  palette = "viridis", domain = PM2.5,
+  bins = seq(0, max(PM2.5, na.rm = TRUE) + 10, by = 10)
+)
+
+map$labels <- paste0(
+  "<strong> Country: </strong> ",
+  map$NAME, "<br/> ",
+  "<strong> PM2.5: </strong> ",
+  PM2.5, "<br/> "
+) %>%
+  lapply(htmltools::HTML)
+
+leaflet(map) %>%
+  addTiles() %>%
+  setView(lng = 0, lat = 30, zoom = 2) %>%
+  addPolygons(
+    fillColor = pal(PM2.5), 
+    color = "white",
+    fillOpacity = 0.7,
+    label = ~labels,
+    highlight = highlightOptions(
+      color = "black",
+      bringToFront = TRUE
+    )
+  ) %>%
+leaflet::addLegend(
+  pal = pal, values = PM2.5,
+  opacity = 0.7, title = "PM2.5"
+)
+```
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### Table interactive des valeurs de PM2.5 pour chaque pays dans le monde
+
+```{r}
+DF <- data.frame(ISO3, NAME, PM2.5) %>%
+  mutate(PM2.5 = round(PM2.5, 2))
+
+datatable(
+  DF,
+  rownames = FALSE, 
+  options = list(pageLength = 10)
+)
+```
+
+### Boîte à moustache des PM2.5
+
+```{r}
+h <- ggplot(data = DF, aes(y = PM2.5)) + geom_boxplot(fill = "red")
+ggplotly(h)
+```
+

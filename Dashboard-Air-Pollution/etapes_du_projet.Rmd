@@ -1,0 +1,147 @@
+---
+title: "Fine particulate air pollution levels (PM2.5) in each of the world countries"
+author: "Josue Afouda"
+date: "22/03/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# install.packages("rnaturalearthdata")
+# install.packages("rnaturalearthhires",
+#                  repos = "http://packages.ropensci.org",
+#                  type = "source")
+# install.packages('wbstats')
+```
+
+# Obtention des données
+
+## Carte du monde
+
+```{r}
+library(rnaturalearth)
+library(sp)
+map <- ne_countries()
+names(map)[names(map) == "iso_a3"] <- "ISO3"
+names(map)[names(map) == "name"] <- "NAME"
+plot(map)
+```
+
+## Obtention des niveaux de concentration de  PM2.5
+
+```{r}
+library(wbstats)
+indicators <- wb_search(pattern = "pollution")
+```
+
+```{r}
+indicators
+```
+
+We decide to plot the indicator PM2.5 air pollution, mean
+annual exposure (micrograms per cubic meter) which has code
+EN.ATM.PM25.MC.M3 in 2016.
+
+```{r}
+# wb_data() function : Download Data from the World Bank API
+d <- wb_data(
+  indicator = "EN.ATM.PM25.MC.M3", 
+  start_date = 2017, 
+  end_date = 2017
+)
+head(d)
+```
+
+```{r}
+map$PM2.5 <- d[match(map$ISO3, d$iso3c), "EN.ATM.PM25.MC.M3"]
+```
+
+
+```{r}
+head(map)
+```
+
+
+# Création des composantes du dashboard
+
+## Table interactive
+
+```{r}
+library(DT)
+df <- map@data
+ISO3 <- df$ISO3
+NAME <- df$NAME
+PM2.5 <- df$PM2.5$EN.ATM.PM25.MC.M3
+DF <- data.frame(ISO3, NAME, PM2.5)
+datatable(
+  DF,
+  rownames = FALSE, 
+  options = list(pageLength = 10)
+)
+```
+
+
+## Carte interactive avec le package Leaflet
+
+
+```{r}
+#  Leaflet map with the PM2.5 values
+library(leaflet)
+pal <- colorBin(
+  palette = "viridis", domain = PM2.5,
+  bins = seq(0, max(PM2.5, na.rm = TRUE) + 10, by = 10)
+)
+
+map$labels <- paste0(
+  "<strong> Country: </strong> ",
+  map$NAME, "<br/> ",
+  "<strong> PM2.5: </strong> ",
+  PM2.5, "<br/> "
+) %>%
+  lapply(htmltools::HTML)
+
+leaflet(map) %>%
+  addTiles() %>%
+  setView(lng = 0, lat = 30, zoom = 2) %>%
+  addPolygons(
+    fillColor = pal(PM2.5), 
+    color = "white",
+    fillOpacity = 0.7,
+    label = ~labels,
+    highlight = highlightOptions(
+      color = "black",
+      bringToFront = TRUE
+    )
+  ) %>%
+leaflet::addLegend(
+  pal = pal, values = PM2.5,
+  opacity = 0.7, title = "PM2.5"
+)
+
+```
+
+## Histogramme avec les valeurs de PM2.5
+
+```{r}
+library(ggplot2)
+library(plotly)
+h <- ggplot(data = DF, aes(x = PM2.5)) + geom_histogram(fill = "red")
+ggplotly(h)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

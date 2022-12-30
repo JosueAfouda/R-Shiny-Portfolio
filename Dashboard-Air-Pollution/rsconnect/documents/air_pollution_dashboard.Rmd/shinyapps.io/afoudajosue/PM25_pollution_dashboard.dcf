@@ -1,0 +1,13 @@
+name: PM25_pollution_dashboard
+title: PM25_pollution_dashboard
+username:
+account: afoudajosue
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7957539
+bundleId: 6683621
+url: https://afoudajosue.shinyapps.io/PM25_pollution_dashboard/
+when: 1672398750.00869
+lastSyncTime: 1672398750.00871
+asMultiple: FALSE
+asStatic: FALSE
