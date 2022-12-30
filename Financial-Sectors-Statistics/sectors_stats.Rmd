@@ -1,0 +1,190 @@
+---
+title: "Financial Sectors Statistics"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyquant)
+library(tidyverse)
+library(plotly)
+library(quantmod)
+library(shiny)
+library(psych)
+library(readr)
+```
+
+
+```{r}
+# Import Stocks metadata
+cac40 <- read_csv("cac40.csv")
+ftse <- read_csv("ftse.csv")
+dax <- read_csv("dax.csv")
+```
+
+
+```{r}
+h4(tags$a("Auteur : Josué AFOUDA", 
+          href = 'https://www.linkedin.com/in/josu%C3%A9-afouda/'))
+
+h4(tags$a("Livre pour apprendre R Shiny", 
+          href = 'https://www.amazon.fr/gp/product/B095Q5HCTW/ref=dbs_a_def_rwt_hsch_vapi_tu00_p1_i5'))
+```
+
+
+Sidebar {.sidebar data-width=250}
+================================
+
+```{r}
+radioButtons(
+  'marketindex', 
+  'Choose an Market Index:',
+  choices = c('France (CAC 40)',
+              #'USA (S&P500)',
+              'Germany (DAX)',
+              'Englang (FTSE 100)'
+              #'Japan (Nikkei 225)'
+              ),
+  inline = F
+)
+
+
+selectInput(
+  "stat", 
+  label = "Select a Summary Statistic", 
+  choices = c("Mean", 
+              "Median", 
+              "Standard Deviation" 
+              #"Skewness", 
+              #"Kurtosis"
+              )
+)
+
+
+dateRangeInput('period', 
+               'Choose a period:', 
+               start = '2021-01-01', 
+               end = '2022-12-31')
+```
+
+
+```{r}
+# Stocks Daily Closed Prices
+market_data <- reactive({
+  if (input$marketindex == 'Germany (DAX)') {
+    stocks <- new.env()
+    getSymbols(
+      dax$Symbol, 
+      env = stocks,
+      from = as.Date(input$period[1]), 
+      to = as.Date(input$period[2])
+    )
+    prices <- do.call(merge, lapply(stocks, Cl))
+    prices <- prices[,order(colnames(prices))]
+    prices
+    
+  } else if (input$marketindex == 'France (CAC 40)') {
+    stocks <- new.env()
+    getSymbols(
+      cac40$Symbol, 
+      env = stocks,
+      from = as.Date(input$period[1]), 
+      to = as.Date(input$period[2])
+    )
+    prices <- do.call(merge, lapply(stocks, Cl))
+    prices <- prices[,order(colnames(prices))]
+    prices
+    
+  } else if (input$marketindex == 'Englang (FTSE 100)') {
+    stocks <- new.env()
+    getSymbols(
+      ftse$Symbol, 
+      env = stocks,
+      from = as.Date(input$period[1]), 
+      to = as.Date(input$period[2])
+    )
+    prices <- do.call(merge, lapply(stocks, Cl))
+    prices <- prices[,order(colnames(prices))]
+    prices
+  }
+  
+})
+
+
+# Stocks Daily Returns
+daily_returns <- reactive({
+  Return.calculate(market_data())[-1]
+})
+
+# Compute a statistic of daily returns
+stat_vector <- reactive({
+  if (input$stat == 'Mean') {
+    colMeans(daily_returns())
+  } else if (input$stat == 'Median') {
+    apply(daily_returns(), 2, median)
+  } else if (input$stat == 'Standard Deviation') {
+    apply(daily_returns(), 2, sd)
+  } #else if (input$stat == 'Skewness') {
+    #skew(daily_returns(), na.rm = TRUE)
+  #} else {
+    #kurtosi(daily_returns(), na.rm = TRUE)
+  #} 
+})
+
+data_market <- reactive({
+  if (input$marketindex == 'USA (S&P500)') {
+    sp500$Stat <- stat_vector()
+    sp50
+  }
+  
+  else if (input$marketindex == 'France (CAC 40)') {
+    cac40$Stat <- stat_vector()
+    cac40
+  }
+  
+  else if (input$marketindex == 'Germany (DAX)') {
+    dax$Stat <- stat_vector()
+    dax
+  }
+  
+  else if (input$marketindex == 'Englang (FTSE 100)') {
+    ftse$Stat <- stat_vector()
+    ftse
+  }
+})
+```
+
+
+
+Charts
+================================
+
+Row 1
+---------------------------------------
+
+### Sectors Statistics
+
+```{r}
+data_plot <- reactive({
+  p <- data_market() %>%
+    group_by(Sector) %>%
+    summarise(Statistic = mean(Stat) * 100)
+  p
+})
+
+renderPlotly({
+
+  g <- ggplot(data_plot(),
+              aes(x = Sector, y = Statistic, fill = Sector)) +
+    geom_col(width = .3) +
+    labs(x = "", y = "", title = paste(input$stat, "Daily Returns (in %) by Sector from", input$period[1], "to", input$period[2], sep = " ")) +
+    theme(axis.text.x = element_text(angle = 60, vjust = 1, hjust=1),plot.title = element_text(hjust = .5))
+
+  ggplotly(g)
+})
+```

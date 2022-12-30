@@ -1,0 +1,13 @@
+name: financial_sectors_stats
+title: financial_sectors_stats
+username:
+account: josueafouda
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7957799
+bundleId: 6683848
+url: https://josueafouda.shinyapps.io/financial_sectors_stats/
+when: 1672407200.32032
+lastSyncTime: 1672407200.32035
+asMultiple: FALSE
+asStatic: FALSE
