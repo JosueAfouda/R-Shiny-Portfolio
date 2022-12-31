@@ -1,0 +1,206 @@
+---
+title: "Airbnb Market Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(shiny)
+library(leaflet)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(fontawesome)
+library(plotly)
+
+newyork <- read.csv('new_york.csv')
+sanfrancisco <- read.csv('san_francisco.csv')
+amsterdam <- read.csv('amsterdam.csv')
+
+newyork <- newyork %>%
+  mutate(price = as.numeric(str_replace_all(price, ",", "")))
+```
+
+New York
+=====================================
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Emplacements des logements Airbnb
+
+```{r}
+selectInput('quartier', 
+            'Choisis un quartier', 
+            choices = unique(newyork$neighbourhood))
+
+nyc_filtered <- reactive({
+  newyork %>%
+    filter(neighbourhood == input$quartier)
+})
+
+renderLeaflet({
+  
+  #########Fonction withProgress()########################################
+    withProgress(message = 'Creation de la carte en cours',
+                 detail = 'Cela peut prendre un peu de temps...', value = 0, {
+                   for (i in 1:20) {
+                     incProgress(1/20)
+                     Sys.sleep(0.25)
+                   }
+                 })
+    ########################################################################
+  
+  leaflet(nyc_filtered()) %>%
+  addTiles() %>%
+  addMarkers()
+})
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Prix moyen ($) d'un Airbnb dans ce quartier
+
+```{r}
+renderValueBox({
+  valueBox(prettyNum(mean(nyc_filtered()$price)), 
+           icon = "fas fa-home")
+})
+# Pour les noms d'icones, voir : https://fontawesome.com/icons?d=gallery&p=2
+```
+
+### Prix moyen ($) d'un Airbnb par type de logement dans ce quartier 
+
+```{r}
+renderPlot({
+  nyc_filtered() %>% 
+    group_by(room_type) %>%
+    summarize(prix_moy_par_quart = mean(price)) %>%
+    ggplot(aes(room_type, prix_moy_par_quart, fill = room_type)) +
+    ylab('Prix ($)') +
+    xlab('Type de logement') +
+    geom_col()
+})
+```
+
+
+San Francisco
+=====================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Emplacements des logements Airbnb
+
+```{r}
+selectInput('quartier_san', 
+            'Choisis un quartier', 
+            choices = unique(sanfrancisco$neighbourhood))
+
+san_filtered <- reactive({
+  sanfrancisco %>%
+    filter(neighbourhood == input$quartier_san)
+})
+
+renderLeaflet({
+  leaflet(san_filtered()) %>%
+  addTiles() %>%
+  addMarkers()
+})
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Prix moyen ($) d'un Airbnb dans ce quartier
+
+```{r}
+renderValueBox({
+  valueBox(prettyNum(mean(san_filtered()$price)), 
+           icon = "fas fa-home")
+})
+```
+
+### Prix moyen ($) d'un Airbnb par type de logement dans ce quartier
+
+```{r}
+renderPlot({
+  san_filtered() %>% 
+    group_by(room_type) %>%
+    summarize(prix_moy_par_quart = mean(price)) %>%
+    ggplot(aes(room_type, prix_moy_par_quart, fill = room_type)) +
+    ylab('Prix ($)') +
+    xlab('Type de logement') +
+    geom_col()
+})
+```
+
+
+Amsterdam
+=====================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Emplacements des logements Airbnb
+
+```{r}
+selectInput('quartier_ams', 
+            'Choisis un quartier', 
+            choices = unique(amsterdam$neighbourhood))
+
+ams_filtered <- reactive({
+  amsterdam %>%
+    filter(neighbourhood == input$quartier_ams)
+})
+
+renderLeaflet({
+  leaflet(ams_filtered()) %>%
+  addTiles() %>%
+  addMarkers()
+})
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Prix moyen ($) d'un Airbnb dans ce quartier
+
+```{r}
+renderValueBox({
+  valueBox(prettyNum(mean(ams_filtered()$price)), 
+           icon = "fas fa-home")
+})
+```
+
+### Prix moyen ($) d'un Airbnb par type de logement dans ce quartier
+
+```{r}
+data_plot <- reactive({
+  d <- ams_filtered() %>% 
+    group_by(room_type) %>%
+    summarize(prix_moy_par_quart = mean(price))
+  d
+})
+
+renderPlotly({
+  
+  g <- ggplot(
+    data_plot(), 
+    aes(room_type, prix_moy_par_quart, fill = room_type)
+  ) +
+    geom_col() +
+    ylab('Prix ($)') +
+    xlab('Type de logement')
+  
+  ggplotly(g)
+})
+```
+
+
