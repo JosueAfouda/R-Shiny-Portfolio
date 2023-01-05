@@ -1,0 +1,13 @@
+name: credit_scoring_bank
+title: credit_scoring_bank
+username:
+account: josueafouda
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4761266
+bundleId: 6699996
+url: https://josueafouda.shinyapps.io/credit_scoring_bank/
+when: 1672913900.49307
+lastSyncTime: 1672913900.49309
+asMultiple: FALSE
+asStatic: FALSE
