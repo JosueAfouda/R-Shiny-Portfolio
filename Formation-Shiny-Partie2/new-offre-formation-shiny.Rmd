@@ -1,0 +1,281 @@
+---
+title: "Nouvelle offre Formation R Shiny"
+author: "Josue Afouda"
+date: "2023-01-06"
+output: 
+  html_document: 
+    toc: yes
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+**Partie 2 : Workflow et outils nécessaires pour le développement d'applications web Shiny destinées à la mise en production (Niveau Intermédiaire à Niveau Avancé)**
+
+# Prérequis : Avoir une bonne connaissance sur le développement de petites applications R Shiny 
+
+Prototypes ou Preuve de Concept ou POC (*Proof Of Concept* en anglais). Celà concerne la partie 1 de la formation.
+
+# Qu'entend t-on par logiciel/application en production ?
+
+En matière de Développement logiciel (*Software Engineer*), on parle de "**production**" pour faire référence à la dernière étape du cycle de vie de développement d'un logiciel. C'est le moment où le logiciel est jugé prêt à être publié et distribué aux utilisateurs finaux. Dans un environnement de production, le logiciel doit fonctionner au mieux et être exempt de défauts. Cela contraste avec les premières étapes du cycle de vie de la construction d'applications telles que le développement et les tests. Pendant ces étapes (développement et tests), le ou les développeurs travaillent activement sur le logiciel afin de l'affiner. 
+
+EN gros, 2 critères principaux définissent un logiciel (ou une application) en production :
+
+1. Utilisateurs : des personnes utilisent réellement ce logiciel dans leur travail quotidien et cette utilisation du logiciel a un impact réel sur leurs performances et celle de l'entreprise.
+
+2. Ingénierie : l'application fonctionne exactement comme prévue par le ou les développeurs et elle est résistante aux changements ce qui suppose que le code est modulable, a subi plusieurs tests (avec succès) et est bien documenté ce qui va faciliter la reprise du travail pour l'écriture d'une nouvelle version par exemple.
+
+L'objectif de cette deuxième partie de la formation est donc de vous apprendre à construire des applications web R Shiny qui respectent les 2 critères évoqués ci-dessus et qui peuvent donc passer en production. Vous apprendrez à passer d'une simple application prototype (POC) à une application déployable en production.
+
+# Commencez sur de solides bases
+
+La chose commune qu'on entend souvent est que Shiny est très bien pour construire des prototypes d'applications web. Et c'est vrai ! Mais Shiny est aussi utilisée en production dans plusieurs entreprises et est au coeur que la stratégie DATA dans plusieurs organisation. Quel que soit votre ambition pour votre application, vous devez toujours commencer sur de solides bases avec la mentalité d'un Software Engineer. Si vous ne le faites pas, vous aurez à réécrire tout le code de votre application afin qu'elle soit robuste et industrialisable. 
+
+L'idée est de développer des applications qui au fil du temps seront plus faciles à maintenir et non plus difficielles. Et cela passe par l'apprentisage des plus importantes compétences en développement logiciel à savoir :
+
+* **organisation du code** ;
+
+* **tests** ;
+
+* **gestion des dépendances** ;
+
+* **contrôle de version** ;
+
+* **intégration continu (CI : Continuous Integration en anglais)** : l'intégration continue est un moyen de valider perpétuellement que les modifications que vous apportez à votre application n'ont rien cassé. Vous pouvez l'utiliser de manière rétroactive (pour vous avertir si une modification que vous venez d'apporter casse votre application) ou de manière proactive (pour vous avertir si une modification proposée casse votre application). Parmi les services CI, il y a : GitHub actions, Travis CI, Azure Pipelines, GitLab CI/CD, Jenkins, etc. ;
+
+* **révisions du code**.
+
+Dans cette formation, vous apprendrez à construire des applications Shiny en tant que packages R en utilisant le package [golem](https://cran.r-project.org/web/packages/golem/index.html) et vous y appliquerez (un peu) les compétences cités ci-dessus.
+
+# Le travail en équipe
+
+Dans les deux sous-sections ci-dessous, j'aborde le travail en équipe sous son angle purement technique. Toutefois, sachez que le développement logiciel n'est pas que technique. Il y a également l'aspect gestion (Management) du projet qui est très importante. Concernant cet aspect, chaque Entreprise a sa propre façon de faire et cela dépend souvent du Chef Projet. Pour ma part, j'adopte toujours la méthodologie agile pour mes projets de développement d'applications et je vous la conseille aussi. Il y a plusieurs ressources sur le net concernat la méthodologie agile. Il vous suffit de faire une petite recherche Google :). Mais en gros, l'image ci-dessous résume bien, selon moi, la philosophie qui sous-tend cette méthodologie :
+
+![](mvp.png)
+
+Cette image montre la manière efficace de construire un produit et ceci se résume en une phrase : *Faites-le fonctionner avant de l'optimiser*.
+
+[Explication orale]
+
+
+## Contrôle de version du code
+
+Pour développer une application complexe prête à passer en production, vous avez fondamentalement besoin d'un outil qui suit les modifications apportées à votre code. [Git](https://git-scm.com/) est un système de contrôle de version open-source qui permet non seulement de suivre les changements apportés à votre code mais également de partarger ces changements avec les autres développeurs du projet. Git est souvent utilisé en combinaison avec [GitHub](https://github.com/) qui est un site web permettant d'héberger du code en ligne, de le partarger avec le monde et de soliciter des améliorations. Le duo Git/GitHub est le système de contrôle de version le plus populaire au monde et le plus utilisé par les développeurs R. Il n'est pas seulement utilisé en Software Engineering mais aussi en Data Science, Machine Learning, etc.
+
+Vous apprendrez à utiliser le package golem qui est une boîte à outils permettant de packager une application Shiny prête pour la production. Ainsi votre application pourra être instalée comme n'importe quel package hébergé sur GitHub avec la commande :
+
+```{r, eval=FALSE}
+devtools::install_github("username/packagename")
+```
+
+
+Vous apprendrez aussi à déployer votre package dans le CRAN et elle pourra donc être installée par tout le monde avec la commande :
+
+
+```{r, eval=FALSE}
+install.packages("packagename")
+```
+
+
+## Modularisation du code R Shiny
+
+Le code d'une application Shiny pour la production doit être divisé en de petits blocs appelés modules qui sont reliés les uns aux autres et qui permettent ainsi à chaque développeur de se concentrer sur un et un seul module à la fois. 
+
+Pour mieux comprendre ce concept, je vous invite à regarder cette vidéo : https://www.youtube.com/watch?v=LlS5VeivIJg. Même si dans cette vidéo, je parle de la modularisation du code en utilisant un code Python pour de l'apprentissage automatique, la compréhension est la même dans un contexte de développement d'applications web avec R Shiny.
+
+Les modules sont l'un des outils les plus puissants pour créer des applications Shiny de manière maintenable et durable.
+
+### Fonctions
+
+Avant d'aborder les modules Shiny, commençons par voir comment créer et utiliser des fonctions afin de réduire la duplication dans le code votre application Shiny.
+
+>>>>>>>>>>>>>>>> Voir TD sur les Fonctions
+
+### Modules Shiny
+
+>>>>>>>>>>>>>>>> Voir TD sur les Modules Shiny
+
+### Séparation de la logique Business et de la logique Application
+
+* La logique Application est ce qui rend votre application Shiny interactive. Les composants de la logique Application ne sont pas spécifiques à votre cœur de métier. Vous pouvez les utiliser pour toute autre ligne de travail ou contexte professionnel.
+
+* La logique Business (ou métier) comprend les composants avec les algorithmes et fonctions de base qui rendent votre application spécifique à un coeur de métier ou à un contexte rpofessionnel. En effet, les composants métier, qui forment la logique Business, sont les éléments qui peuvent s'exécuter en dehors de tout contexte interactif. C'est le cas par exemple des calculs et algorithmes spécifiques, des tracés personnalisés, des appels spécifiques à une base de données, etc.
+
+Ces deux types de composants ne doivent pas être ensemble. Une façon efficace d'augmenter la modularisation de votre code est de les séparer (si possible les mettre dans des fichiers différents). Voyons l'exemple ci-dessous :
+
+
+```{r, eval=FALSE}
+library(shiny)
+library(dplyr)
+# A simple app that returns a table
+ui <- function() {
+  tagList(
+    tableOutput("tbl"),
+    sliderInput("n", "Number of rows", 1, 50, 25)
+  )
+}
+server <- function(input, output, session) {
+  output$tbl <- renderTable({
+    # Writing all the business logic for the table manipulation
+    # inside the server
+    mtcars %>%
+      # [...] %>%
+      # [...] %>%
+      # [...] %>%
+      # [...] %>%
+      # [...] %>%
+      top_n(input$n)
+  })
+}
+shinyApp(ui, server)
+```
+
+On pourrait séparer l'aspect métier et l'aspect application en réécrivant le code de la manière ci-dessous :
+
+```{r, eval=FALSE}
+# Writing all the business logic for the table manipulation
+# inside an external function
+top_this <- function(tbl, n) {
+  tbl %>%
+    # [...] %>%
+    # [...] %>%
+    # [...] %>%
+    # [...] %>%
+    top_n(n)
+}
+
+# A simple app that returns a table
+ui <- function() {
+  tagList(
+    tableOutput("tbl"),
+    sliderInput("n", "Number of rows", 1, 50, 25)
+  )
+}
+
+server <- function(input, output, session) {
+  output$tbl <- renderTable({
+    # We call the previously declared function inside the server
+    # The business logic is thus defined outside the application
+    top_this(mtcars, input$n)
+  })
+}
+
+shinyApp(ui, server)
+```
+
+Les deux scripts font exactement la même chose. La différence est que le deuxième code peut être facilement exploré sans avoir à relancer l'application. Vous pourrez créer un exemple reproductible pour explorer, illustrer et améliorer top_this(). Cette fonction peut être testée, documentée et réutilisée en dehors de l'application. De plus, cette approche réduit la charge cognitive lors du débogage : vous déboguez soit un problème d'application, soit un problème de logique métier. Vous ne déboguez jamais les deux en même temps.
+
+
+# Construire une application web Shiny comme un package : Pourquoi ?
+
+Il y 6 raisons principales au fait de construire une application web Shiny en tant que package :
+
+1. **un package possède des métadonnées** : Les métadonnées (*metadata* en anglais) sont les informations nécessaires à tout logiciel en production telles que son nom, son utilité, sa version, les personnes à contacter en cas de problèmes, etc.
+
+2. **un package gère lui-même toutes les dépendances nécessaires à son fonctionnement** : la gestion des dépendances est intrinsèque à la structure d'un package et en adoptant cette approche pour votre application web Shiny, vous éviterez d'inutiles maux de têtes et dérangements lorsque d'autres personnent l'installeront dans leurs machines. 
+
+3. **Un package est intrinsèquement modularisé en fonctions** : Un package est divisé en fonctions. Les fonctions sont dans des fichiers .R (dossier R). Ceci facilite la maintenance du package si nécessaire, soit par vous-même ou soit par d'autres développeurs.
+
+4. **Un package est documenté** : Chaque fonction du pakage est documentée. La documentation d'un package concerne à la fois les utilisateurs finaux de l'application et les futurs développeurs qui auront pour mission de la maintenir et de la mettre à jour. Ce qui est intéressant, c'est que la documentation de votre package est compilée automatiquement grâce à la bibliothèque [roxygen2][https://cran.r-project.org/web/packages/roxygen2/index.html]. De plus, vous pouvez utiliser le package [pkgdown]() pour construire un 
+beau site web pour votre package et ceci en une seule commande :
+
+```{r, eval=FALSE}
+pkgdown::build_site()
+```
+
+
+5. **un package est (évidemment) testé** : tout d'abord, il faut savoir que rien ne va en production sans être testé. Mais comment tester une application web R Shiny ? Etant donné que dans l'écosystème de R, les frameworks ([testthat](https://cran.r-project.org/web/packages/testthat/index.html)) pour le test de package sont très bien documentés et faciles à implémenter, vous n'aurez ucun mal à les utiliser pour tester votre application web R Shiny si vous la construisez comme un package.
+
+6. **un package est intrinsèquement facile à partarger** : si vous construisez votre application web comme un package, vous pouvez la partarger facilement :
+
+- en tant que fichier *tar.gz* ;
+
+- sur internet via votre compte GitHub afin que tout le monde puisse l'installer en utilisant la commande :
+
+```{r, eval=FALSE}
+devtools::install_github("username/packagename")
+```
+
+- sur internet via le CRAN afin que tout le monde puisse l'installer via la commande :
+
+```{r, eval=FALSE}
+install.packages("packagename")
+```
+
+
+***idée : transformer mon application sur kmeans et acp en un package. L'enrichir en utilisant l'application market-campaign (voir livre Packt) et bien le documenter en anglais. Le déployer sur GitHub et essayer de le monétiser)***.
+
+## TD Création de Package
+
+>>>>>>>>>>>>>>>>>>>>>> Voir dossier tdPackage
+
+```{r, eval=FALSE}
+# data et vignette sont facultatifs
+#Pour créer un dossier data dans le package
+
+## Choisir la dataframe que vous voulez insérez dans le package
+sampleData <- data.frame(Num = 1:10, Letter = LETTERS[1:10])
+
+## Exécuter la commance ci-dessous dans la console.
+  # Cette commande va créer le dossier data
+  # et sauvegarder la dataframe sampleData au format .rda
+usethis::use_data(sampleData)
+
+# Sauvegardons un autre dataframe
+# sim_dat <- data.frame(
+#   ID = 1:10,
+#   Value = sample(1:11, 10),
+#   Apples = sample(c(TRUE, FALSE), 10, replace = TRUE)
+# )
+# usethis::use_data(sim_dat)
+
+# Si le package appelle des fonctions d'autres packages, on doit les lister dans le fichier DESCRIPTION. Imports:
+  # On peut le faire automatiquement pour chaque package.
+  # Par exemple, dans la console tapez : usethis::use_package("dplyr")
+
+# Add a vignette called "Generating Summaries with Data Summary"
+usethis::use_vignette("Generating_Summaries_with_Data_Summary", pkg = "datasummary")
+  # ça va créer un dossier nommé vignettes qui va contenir un fichier .Rmd
+  # Dans ce fichier vous pouvez expliquer plus précisement comment utiliser des fonctions de votre package
+  # When writing a vignette, you’re teaching someone how to use your package
+  # Vous pouvez regarder des exemples de vignettes d'autres packages et vous en inspirer. browseVignettes("dplyr")
+  # Vous pouvez créer autant de vignettes que vous voulez
+
+# Actualiser la documentation de votre package en tapant cette commande dans la console :
+devtools::document()
+  # Cela actualise le dossier man
+  # pour voir l'aide d'une fonction du package. Exple : help("meanPlot")
+
+# Pour vérifier que tout est ok, tapez dans la console :
+devtools::check() # Avoir forcément 0 errors
+# Pour voir si vous répondez à tous les critères du CRAN, mettez : 
+devtools::check(cran = TRUE)
+
+# Si tout est bon, on peut construire le package en tapant dans la console :
+devtools::build()
+  # Cela crée le fichier tdPackage_1.0.0.tar.gz
+  # Nous pouvons envoyer ce fichier à qui de droit pour qu'il installe le package dans son ordinateur et commence par l'utiliser.
+install.packages("../tdPackage_1.0.0.tar.gz")
+  # installation manuelle à partir du menu Tools
+  # Si le package est Pusher sur GitHub, on peut l'installer avec :
+devtools::install_github("JosueAFouda/tdPackage")
+
+# On peut construire un site web pour le package en tapant successivement ces codes dans la console :
+usethis::use_pkgdown(config_file = "_pkgdown.yml", destdir = "docs")
+pkgdown::build_site()
+  # ça va créer un dossier docs dans lequel il y aura tout les fichiers liés au site
+  # si le package est dans un répertoire GitHub, on peut générer l'url du site
+  # To configure GitHub, go to the settings for the repository and choose GitHub Pages with the sources as the /docs folder
+```
+
+
+Si vous désirez soumettre votre package sur le CRAN, allez sur ce site : https://cran.r-project.org/submit.html et suivez chaque étape. Sinon, GitHub est un endroit relativement facile pour héberger et distribuer un package.
+ 
+
+
+
+
